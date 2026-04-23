@@ -1,9 +1,10 @@
 ﻿"use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
+  Boxes,
   FileText,
   Layers3,
   LogOut,
@@ -17,11 +18,32 @@ import { Button } from "@/src/components/ui/button"
 import { Input } from "@/src/components/ui/input"
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
 import { cn } from "@/src/lib/utils"
+import api from "@/src/lib/api/client"
 import { useAuthStore } from "@/src/stores/authStore"
 import { supabase } from "@/src/lib/supabase/client"
 
 type AdminShellProps = {
   children: React.ReactNode
+}
+
+type AdminSearchOrderResult = {
+  id: string
+  codigo_orden: string
+  cliente_nombre: string
+  cliente_empresa: string
+  estado: string
+}
+
+type AdminSearchProductResult = {
+  id: string
+  nombre: string
+  sku: string | null
+  activo: boolean
+}
+
+type AdminSearchResponse = {
+  ordenes: AdminSearchOrderResult[]
+  productos: AdminSearchProductResult[]
 }
 
 const navItems = [
@@ -42,10 +64,17 @@ function initials(fullName?: string) {
 export function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const searchRef = useRef<HTMLDivElement | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
   const [currentVista, setCurrentVista] = useState("")
   const [missingRoleCheckedForSession, setMissingRoleCheckedForSession] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<AdminSearchResponse>({ ordenes: [], productos: [] })
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState("")
 
   const session = useAuthStore((s) => s.session)
   const profile = useAuthStore((s) => s.profile)
@@ -174,6 +203,99 @@ export function AdminShell({ children }: AdminShellProps) {
     }
   }, [mobileOpen])
 
+  useEffect(() => {
+    const trimmed = searchQuery.trim()
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearchQuery(trimmed)
+    }, 300)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [searchQuery])
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    if (debouncedSearchQuery.length < 2) {
+      setSearchResults({ ordenes: [], productos: [] })
+      setSearchLoading(false)
+      setSearchError("")
+      return () => controller.abort()
+    }
+
+    const searchAdmin = async () => {
+      setSearchLoading(true)
+      setSearchError("")
+
+      try {
+        const { data } = await api.get<AdminSearchResponse>("/api/admin/search", {
+          params: { q: debouncedSearchQuery },
+          signal: controller.signal,
+        })
+        setSearchResults(data)
+        setSearchOpen(true)
+      } catch (error) {
+        if (!isAbortError(error)) {
+          setSearchResults({ ordenes: [], productos: [] })
+          setSearchError("No pudimos buscar ahora mismo.")
+          setSearchOpen(true)
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setSearchLoading(false)
+        }
+      }
+    }
+
+    void searchAdmin()
+
+    return () => controller.abort()
+  }, [debouncedSearchQuery])
+
+  useEffect(() => {
+    setSearchOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!searchRef.current?.contains(event.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown)
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown)
+    }
+  }, [])
+
+  const totalResults = searchResults.ordenes.length + searchResults.productos.length
+
+  const navigateFromSearch = (href: string) => {
+    setSearchOpen(false)
+    setSearchQuery("")
+    setDebouncedSearchQuery("")
+    setSearchResults({ ordenes: [], productos: [] })
+    setSearchError("")
+    router.push(href)
+  }
+
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const firstOrder = searchResults.ordenes[0]
+    if (firstOrder) {
+      navigateFromSearch(`/admin/ordenes/${firstOrder.id}`)
+      return
+    }
+
+    const firstProduct = searchResults.productos[0]
+    if (firstProduct) {
+      navigateFromSearch(`/admin/productos/${firstProduct.id}`)
+    }
+  }
+
   // Don't render admin until auth is verified
   if (!authChecked) {
     return (
@@ -226,9 +348,95 @@ export function AdminShell({ children }: AdminShellProps) {
                 >
                   <Menu className="size-4" />
                 </Button>
-                <div className="relative w-full min-w-55 max-w-lg">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input className="h-12 rounded-lg border-foreground/20 bg-surface-container pl-10" placeholder="Buscar cotizaciones, envios..." />
+                <div ref={searchRef} className="relative w-full min-w-55 max-w-lg">
+                  <form onSubmit={handleSearchSubmit}>
+                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      onFocus={() => {
+                        if (searchQuery.trim().length >= 2 || totalResults > 0 || searchError) {
+                          setSearchOpen(true)
+                        }
+                      }}
+                      className="h-12 rounded-lg border-foreground/20 bg-surface-container pl-10"
+                      placeholder="Buscar órdenes o productos..."
+                      aria-label="Buscar órdenes o productos"
+                    />
+                  </form>
+
+                  {searchOpen ? (
+                    <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-foreground/10 bg-background shadow-[0_18px_45px_rgba(24,22,17,0.14)]">
+                      <div className="border-b border-foreground/8 px-4 py-3 text-xs text-muted-foreground">
+                        {searchLoading
+                          ? "Buscando..."
+                          : debouncedSearchQuery.length < 2
+                            ? "Escribe al menos 2 caracteres."
+                            : totalResults > 0
+                              ? `${totalResults} resultado${totalResults === 1 ? "" : "s"}`
+                              : searchError || "Sin resultados"}
+                      </div>
+
+                      {searchResults.ordenes.length > 0 ? (
+                        <div className="border-b border-foreground/8 px-2 py-2 last:border-b-0">
+                          <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            Órdenes
+                          </p>
+                          <div className="space-y-1">
+                            {searchResults.ordenes.map((order) => {
+                              const clientLabel = order.cliente_empresa || order.cliente_nombre || "Cliente sin nombre"
+                              return (
+                                <button
+                                  key={order.id}
+                                  type="button"
+                                  onClick={() => navigateFromSearch(`/admin/ordenes/${order.id}`)}
+                                  className="flex w-full items-start gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-surface-container-low"
+                                >
+                                  <span className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
+                                    <FileText className="size-4" />
+                                  </span>
+                                  <span className="min-w-0">
+                                    <span className="block text-sm font-medium text-foreground">{order.codigo_orden}</span>
+                                    <span className="block truncate text-xs text-muted-foreground">
+                                      {clientLabel} · {formatOrderStateLabel(order.estado)}
+                                    </span>
+                                  </span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {searchResults.productos.length > 0 ? (
+                        <div className="px-2 py-2">
+                          <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            Productos
+                          </p>
+                          <div className="space-y-1">
+                            {searchResults.productos.map((product) => (
+                              <button
+                                key={product.id}
+                                type="button"
+                                onClick={() => navigateFromSearch(`/admin/productos/${product.id}`)}
+                                className="flex w-full items-start gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-surface-container-low"
+                              >
+                                <span className="mt-0.5 rounded-lg bg-primary/10 p-2 text-primary">
+                                  <Boxes className="size-4" />
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block text-sm font-medium text-foreground">{product.nombre}</span>
+                                  <span className="block truncate text-xs text-muted-foreground">
+                                    {product.sku || "Sin SKU"} · {product.activo ? "Activo" : "Inactivo"}
+                                  </span>
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
@@ -267,6 +475,27 @@ export function AdminShell({ children }: AdminShellProps) {
       </Button>
     </div>
   )
+}
+
+function formatOrderStateLabel(state: string) {
+  const stateMap: Record<string, string> = {
+    PENDIENTE: "Pendiente",
+    EN_PREPARACION: "En preparación",
+    LISTO: "Listo",
+    DESPACHADO: "Despachado",
+    CANCELADA: "Cancelada",
+  }
+
+  return stateMap[state] ?? state
+}
+
+function isAbortError(error: unknown) {
+  if (typeof error !== "object" || error === null) {
+    return false
+  }
+
+  const maybeError = error as { name?: string; code?: string }
+  return maybeError.name === "CanceledError" || maybeError.name === "AbortError" || maybeError.code === "ERR_CANCELED"
 }
 
 function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNavigate?: () => void; onLogout?: () => void }) {

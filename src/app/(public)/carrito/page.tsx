@@ -37,7 +37,7 @@ export default function CartPage() {
             title="Tu carrito esta vacio"
             description="Explora el catalogo y agrega productos personalizados para comenzar tu pedido."
             actionLabel="Ver catalogo"
-            onAction={() => router.push("/")}
+            onAction={() => router.push("/catalogo")}
           />
         ) : (
           <section className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
