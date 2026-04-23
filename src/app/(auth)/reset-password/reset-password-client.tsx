@@ -23,7 +23,7 @@ export function ResetPasswordClient() {
   const searchParams = useSearchParams();
 
   const nextPath = useMemo(() => getSafeNextPath(searchParams.get("next")), [searchParams]);
-  const code = searchParams.get("code");
+  const errorMessage = searchParams.get("error");
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -35,16 +35,20 @@ export function ResetPasswordClient() {
     let cancelled = false;
 
     async function ensureRecoverySession() {
-      setStatus(null);
+      setStatus(errorMessage ? { type: "error", message: errorMessage } : null);
 
       try {
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) {
-            throw error;
-          }
-        } else {
-          await supabase.auth.getSession();
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!user) {
+          throw new Error("El enlace de recuperación expiró o ya fue usado. Solicita uno nuevo.");
         }
       } catch (error) {
         if (!cancelled) {
@@ -68,7 +72,7 @@ export function ResetPasswordClient() {
     return () => {
       cancelled = true;
     };
-  }, [code]);
+  }, [errorMessage]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -193,7 +197,7 @@ export function ResetPasswordClient() {
                   <Button
                     type="submit"
                     size="lg"
-                    disabled={isSubmitting || (status?.type === "error" && Boolean(code) === false)}
+                    disabled={isSubmitting || status?.type === "error"}
                     className="h-12 w-full rounded-lg bg-primary font-sans text-base font-semibold text-foreground transition-colors hover:bg-[#B9983A]"
                   >
                     {isSubmitting ? "Actualizando..." : "Actualizar contraseña"}

@@ -85,7 +85,14 @@ export function LoginClient() {
 
     try {
       const redirectTo =
-        typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
+        typeof window !== "undefined"
+          ? (() => {
+              const callbackUrl = new URL("/auth/callback", window.location.origin);
+              callbackUrl.searchParams.set("next", "/reset-password");
+              callbackUrl.searchParams.set("redirect", nextPath === "/" ? "/login" : nextPath);
+              return callbackUrl.toString();
+            })()
+          : undefined;
 
       const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail, {
         redirectTo,
