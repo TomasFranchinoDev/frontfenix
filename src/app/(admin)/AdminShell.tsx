@@ -327,7 +327,7 @@ export function AdminShell({ children }: AdminShellProps) {
         </div>
       ) : null}
 
-      <div className="mx-auto grid min-h-screen w-full max-w-400 grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="mx-auto grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="hidden border-r border-foreground/8 bg-sidebar lg:block">
           <div className="sticky top-0 flex min-h-screen flex-col px-5 py-7">
             <Sidebar activeKey={activeKey} onLogout={handleLogout} />
@@ -457,7 +457,7 @@ export function AdminShell({ children }: AdminShellProps) {
             </div>
           </header>
 
-          <div className="mx-auto w-full max-w-310 px-4 py-8 sm:px-6 lg:px-9">{children}</div>
+          <div className="mx-auto w-full px-4 py-8 sm:px-6 lg:px-9">{children}</div>
           <p className="px-4 pb-6 text-center text-[11px] text-muted-foreground sm:px-6 lg:px-9">
            © 2026 Fenix Envases. Todos los derechos reservados.
           </p>
