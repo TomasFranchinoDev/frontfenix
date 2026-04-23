@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { ChevronDown, Menu, Search, ShoppingBag, X } from "lucide-react"
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js"
 
@@ -58,16 +58,17 @@ export function Navbar() {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const pathname = usePathname()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const currentQuery = searchParams.get("q") ?? ""
+  const [currentQuery, setCurrentQuery] = useState("")
 
   const setSearchQuery = useCatalogStore((state) => state.setSearchQuery)
 
+  const handleSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentQuery(event.target.value)
+  }
+
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const searchValue = formData.get("q") as string
-    const trimmed = searchValue.trim()
+    const trimmed = currentQuery.trim()
     setSearchQuery(trimmed)
     if (trimmed) {
       router.push(`/catalogo?q=${encodeURIComponent(trimmed)}`)
@@ -198,8 +199,8 @@ export function Navbar() {
               <input
                 type="text"
                 name="q"
-                defaultValue={currentQuery}
-                key={`desktop-search-${currentQuery}`}
+                value={currentQuery}
+                onChange={handleSearchInput}
                 placeholder="Buscar soluciones de empaque"
                 className="h-10 w-full rounded-full border border-outline-variant bg-surface-container-low pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/25"
               />
@@ -311,8 +312,8 @@ export function Navbar() {
               <input
                 type="text"
                 name="q"
-                defaultValue={currentQuery}
-                key={`mobile-search-${currentQuery}`}
+                value={currentQuery}
+                onChange={handleSearchInput}
                 placeholder="Buscar soluciones de empaque"
                 className="h-12 w-full rounded-full border border-outline-variant bg-surface-container-low pl-10 pr-4 text-base text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/25"
               />
