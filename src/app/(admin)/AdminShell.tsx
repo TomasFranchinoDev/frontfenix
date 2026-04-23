@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   FileText,
   Layers3,
@@ -42,9 +42,9 @@ function initials(fullName?: string) {
 export function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
+  const [currentVista, setCurrentVista] = useState("")
 
   const session = useAuthStore((s) => s.session)
   const profile = useAuthStore((s) => s.profile)
@@ -80,13 +80,22 @@ export function AdminShell({ children }: AdminShellProps) {
     router.push("/")
   }
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const vista = new URLSearchParams(window.location.search).get("vista") ?? ""
+    setCurrentVista(vista)
+  }, [pathname])
+
   const activeKey = useMemo(() => {
     if (!pathname) return "dashboard"
     if (pathname.startsWith("/admin/productos")) return "contenidos"
-    if (pathname.startsWith("/admin/ordenes") && searchParams.get("vista") === "envios") return "envios"
+    if (pathname.startsWith("/admin/ordenes") && currentVista === "envios") return "envios"
     if (pathname.startsWith("/admin/ordenes")) return "cotizaciones"
     return "dashboard"
-  }, [pathname, searchParams])
+  }, [pathname, currentVista])
 
   useEffect(() => {
     if (!mobileOpen) return

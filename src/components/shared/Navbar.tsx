@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { ChevronDown, Menu, Search, ShoppingBag, X } from "lucide-react"
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js"
 
@@ -58,10 +58,18 @@ export function Navbar() {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const pathname = usePathname()
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const [currentQuery, setCurrentQuery] = useState("")
 
   const setSearchQuery = useCatalogStore((state) => state.setSearchQuery)
-  const currentQuery = searchParams.get("q") ?? ""
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+
+    const nextQuery = new URLSearchParams(window.location.search).get("q") ?? ""
+    setCurrentQuery(nextQuery)
+  }, [pathname])
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
