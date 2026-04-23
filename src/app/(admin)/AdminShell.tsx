@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
@@ -49,6 +49,7 @@ export function AdminShell({ children }: AdminShellProps) {
   const session = useAuthStore((s) => s.session)
   const profile = useAuthStore((s) => s.profile)
   const isInitialized = useAuthStore((s) => s.isInitialized)
+  const isLoading = useAuthStore((s) => s.isLoading)
   const initializeAuth = useAuthStore((s) => s.initializeAuth)
   const clearAuth = useAuthStore((s) => s.clearAuth)
   const avatarLabel = initials(profile?.nombre_completo)
@@ -62,16 +63,18 @@ export function AdminShell({ children }: AdminShellProps) {
 
   // Redirect to /login if no session after auth is initialized
   useEffect(() => {
-    if (!isInitialized) return
+    if (!isInitialized || isLoading) {
+      setAuthChecked(false)
+      return
+    }
 
-    if (!session) {
+    if (!session || !profile || !profile.es_admin) {
       router.push("/login")
       return
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAuthChecked(true)
-  }, [isInitialized, session, router])
+  }, [isInitialized, isLoading, session, profile, router])
 
   const handleLogout = async () => {
     setMobileOpen(false)
@@ -257,4 +260,3 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
     </>
   )
 }
-
