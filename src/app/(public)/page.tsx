@@ -82,7 +82,7 @@ export default function PublicHomePage() {
       <main className="w-full">
         {/* ============== SECCIÓN HERO / PRESENTACIÓN ============== */}
         <section className="relative overflow-hidden bg-surface-alt pt-24 pb-16 md:pb-24">
-          <div className="mx-auto w-full max-w-[1440px] px-6 md:px-12 xl:px-8">
+          <div className="container mx-auto px-6 md:px-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Contenido izquierdo */}
               <div className="flex flex-col items-start gap-6">
@@ -160,7 +160,7 @@ export default function PublicHomePage() {
 
         {/* ============== SECCIÓN CASOS DE ÉXITO ============== */}
         <section id="casos-exito" className="bg-white py-20 md:py-28">
-          <div className="mx-auto w-full max-w-[1440px] px-6 md:px-12 xl:px-8">
+          <div className="container mx-auto px-6 md:px-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
               <div className="w-full md:flex-1">
                 <span className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground mb-3 block">
@@ -184,7 +184,7 @@ export default function PublicHomePage() {
                   type="button"
                   aria-label="Ver casos anteriores"
                   onClick={() => scrollSuccessCases("left")}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant text-foreground transition-colors hover:border-primary hover:text-primary lg:hidden"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant text-foreground transition-colors hover:border-primary hover:text-primary"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -192,7 +192,7 @@ export default function PublicHomePage() {
                   type="button"
                   aria-label="Ver más casos"
                   onClick={() => scrollSuccessCases("right")}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant text-foreground transition-colors hover:border-primary hover:text-primary lg:hidden"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant text-foreground transition-colors hover:border-primary hover:text-primary"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -202,7 +202,7 @@ export default function PublicHomePage() {
             {/* Carousel para mobile/tablet */}
             <div
               ref={successCasesCarouselRef}
-              className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 scroll-smooth lg:hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               {successCases.map((item) => (
                 <article
@@ -234,40 +234,12 @@ export default function PublicHomePage() {
                 </article>
               ))}
             </div>
-
-            <div className="hidden gap-6 lg:grid lg:grid-cols-3 xl:gap-8">
-              {successCases.map((item) => (
-                <article key={item.id} className="group cursor-pointer">
-                  <div className="relative mb-5 aspect-[4/3] overflow-hidden rounded-lg bg-surface-container">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      sizes="(max-width: 1280px) 33vw, 420px"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <h3 className="mb-1 text-lg font-bold text-foreground">{item.title}</h3>
-                  <p className="mb-3 text-sm text-muted-foreground">Para: {item.client}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {item.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-[11px] font-medium text-muted-foreground"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
           </div>
         </section>
 
         {/* ============== SECCIÓN CATÁLOGO DE ESPECIALIDAD ============== */}
         <section id="catalogo" className="bg-surface-alt py-20 md:py-28">
-          <div className="mx-auto w-full max-w-[1440px] px-6 md:px-12 xl:px-8">
+          <div className="container mx-auto px-6 md:px-12">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground mb-3 block">
                 Nuestro Inventario
