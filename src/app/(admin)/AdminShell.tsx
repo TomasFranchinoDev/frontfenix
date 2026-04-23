@@ -100,7 +100,27 @@ export function AdminShell({ children }: AdminShellProps) {
         return
       }
 
+      if (typeof resolvedProfile.es_admin !== "boolean") {
+        resolvedProfile = await fetchProfile()
+      }
+
+      if (cancelled || !resolvedProfile) {
+        return
+      }
+
+      if (typeof resolvedProfile.es_admin !== "boolean") {
+        console.warn("[AdminShell] Admin role still unavailable after profile fetch", {
+          sessionUserId: session.user.id,
+          profile: resolvedProfile,
+        })
+        return
+      }
+
       if (!resolvedProfile.es_admin) {
+        console.log("[AdminShell] Redirecting non-admin user from /admin", {
+          sessionUserId: session.user.id,
+          profile: resolvedProfile,
+        })
         router.push("/")
         return
       }
