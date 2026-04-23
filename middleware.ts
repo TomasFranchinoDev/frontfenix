@@ -1,119 +1,32 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 type UserProfile = {
   es_admin?: boolean;
 };
 
-function decodeBase64Url(value: string): string {
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
-  return atob(`${normalized}${padding}`);
-}
+function createSupabaseMiddlewareClient(request: NextRequest, response: NextResponse) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-function getAccessTokenFromValue(rawValue?: string): string | null {
-  if (!rawValue) {
-    return null;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Missing Supabase environment variables.");
   }
 
-  const candidates = [rawValue, decodeURIComponent(rawValue)];
-
-  for (const candidate of candidates) {
-    if (!candidate) {
-      continue;
-    }
-
-    if (/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/.test(candidate)) {
-      return candidate;
-    }
-
-    try {
-      const parsed = JSON.parse(candidate) as unknown;
-
-      if (Array.isArray(parsed) && typeof parsed[0] === "string") {
-        return parsed[0];
-      }
-
-      if (
-        typeof parsed === "object" &&
-        parsed !== null &&
-        "access_token" in parsed &&
-        typeof (parsed as Record<string, unknown>).access_token === "string"
-      ) {
-        return (parsed as { access_token: string }).access_token;
-      }
-    } catch {
-      // noop
-    }
-
-    if (candidate.startsWith("base64-")) {
-      try {
-        const decoded = decodeBase64Url(candidate.slice("base64-".length));
-        const parsed = JSON.parse(decoded) as unknown;
-
-        if (Array.isArray(parsed) && typeof parsed[0] === "string") {
-          return parsed[0];
-        }
-
-        if (
-          typeof parsed === "object" &&
-          parsed !== null &&
-          "access_token" in parsed &&
-          typeof (parsed as Record<string, unknown>).access_token === "string"
-        ) {
-          return (parsed as { access_token: string }).access_token;
-        }
-      } catch {
-        // noop
-      }
-    }
-  }
-
-  return null;
-}
-
-function getAccessToken(request: NextRequest): string | null {
-  const directTokenCookies = ["access_token", "sb-access-token", "supabase-access-token"];
-
-  for (const cookieName of directTokenCookies) {
-    const token = getAccessTokenFromValue(request.cookies.get(cookieName)?.value);
-    if (token) {
-      return token;
-    }
-  }
-
-  const cookies = request.cookies.getAll();
-
-  // Standard Supabase cookie: sb-<project-ref>-auth-token
-  const supabaseCookie = cookies.find(
-    (cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token"),
-  );
-
-  if (supabaseCookie) {
-    const token = getAccessTokenFromValue(supabaseCookie.value);
-    if (token) {
-      return token;
-    }
-  }
-
-  // Chunked Supabase cookies: sb-<project-ref>-auth-token.0, .1, ...
-  const chunkedCookies = cookies
-    .filter((cookie) => /^sb-.*-auth-token\.\d+$/.test(cookie.name))
-    .sort((a, b) => {
-      const aIndex = Number(a.name.split(".").pop() ?? "0");
-      const bIndex = Number(b.name.split(".").pop() ?? "0");
-      return aIndex - bIndex;
-    });
-
-  if (chunkedCookies.length > 0) {
-    const chunkedValue = chunkedCookies.map((cookie) => cookie.value).join("");
-    const token = getAccessTokenFromValue(chunkedValue);
-    if (token) {
-      return token;
-    }
-  }
-
-  return null;
+  return createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          request.cookies.set(name, value);
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
 }
 
 function buildLoginRedirect(request: NextRequest): NextResponse {
@@ -155,13 +68,27 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = getAccessToken(request);
+  const response = NextResponse.next({ request });
+  const supabase = createSupabaseMiddlewareClient(request, response);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!token) {
+  if (!user) {
     return buildLoginRedirect(request);
   }
 
   if (pathname.startsWith("/admin")) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const token = session?.access_token;
+
+    if (!token) {
+      return buildLoginRedirect(request);
+    }
+
     const userIsAdmin = await isAdmin(token);
 
     if (!userIsAdmin) {
@@ -170,7 +97,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

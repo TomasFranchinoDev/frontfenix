@@ -45,8 +45,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ profile: data, isAdmin: data.es_admin === true });
       return data;
     } catch {
-      set({ profile: null, isAdmin: false });
-      return null;
+      return get().profile;
     }
   },
   updateProfile: async (updates) => {

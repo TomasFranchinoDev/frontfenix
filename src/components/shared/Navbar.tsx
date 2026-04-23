@@ -101,12 +101,12 @@ export function Navbar() {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, nextSession: Session | null) => {
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, nextSession: Session | null) => {
       setSession(nextSession)
 
       if (nextSession) {
         await fetchProfile()
-      } else {
+      } else if (event === "SIGNED_OUT") {
         clearAuth()
       }
     })
