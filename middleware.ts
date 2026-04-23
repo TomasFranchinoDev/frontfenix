@@ -82,15 +82,38 @@ function getAccessToken(request: NextRequest): string | null {
     }
   }
 
-  const supabaseCookie = request.cookies
-    .getAll()
-    .find((cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token"));
+  const cookies = request.cookies.getAll();
 
-  if (!supabaseCookie) {
-    return null;
+  // Standard Supabase cookie: sb-<project-ref>-auth-token
+  const supabaseCookie = cookies.find(
+    (cookie) => cookie.name.startsWith("sb-") && cookie.name.endsWith("-auth-token"),
+  );
+
+  if (supabaseCookie) {
+    const token = getAccessTokenFromValue(supabaseCookie.value);
+    if (token) {
+      return token;
+    }
   }
 
-  return getAccessTokenFromValue(supabaseCookie.value);
+  // Chunked Supabase cookies: sb-<project-ref>-auth-token.0, .1, ...
+  const chunkedCookies = cookies
+    .filter((cookie) => /^sb-.*-auth-token\.\d+$/.test(cookie.name))
+    .sort((a, b) => {
+      const aIndex = Number(a.name.split(".").pop() ?? "0");
+      const bIndex = Number(b.name.split(".").pop() ?? "0");
+      return aIndex - bIndex;
+    });
+
+  if (chunkedCookies.length > 0) {
+    const chunkedValue = chunkedCookies.map((cookie) => cookie.value).join("");
+    const token = getAccessTokenFromValue(chunkedValue);
+    if (token) {
+      return token;
+    }
+  }
+
+  return null;
 }
 
 function buildLoginRedirect(request: NextRequest): NextResponse {
