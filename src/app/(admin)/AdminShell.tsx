@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
@@ -50,7 +50,7 @@ const navItems = [
   { key: "dashboard", href: "/admin", label: "Panel principal", icon: Layers3 },
   { key: "cotizaciones", href: "/admin/ordenes", label: "Cotizaciones", icon: FileText },
   { key: "contenidos", href: "/admin/productos", label: "Productos", icon: Layers3 },
-  { key: "envios", href: "/admin/ordenes?vista=envios", label: "Env�os", icon: Truck },
+  { key: "envios", href: "/admin/ordenes?vista=envios", label: "Envios", icon: Truck },
 ] as const
 
 function initials(fullName?: string) {
@@ -314,11 +314,11 @@ export function AdminShell({ children }: AdminShellProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {mobileOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Men� admin">
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu admin">
           <button
             type="button"
             className="absolute inset-0 bg-foreground/25 backdrop-blur-sm"
-            aria-label="Cerrar men�"
+            aria-label="Cerrar menu"
             onClick={() => setMobileOpen(false)}
           />
           <div className="absolute inset-y-0 left-0 w-[min(92vw,320px)] bg-sidebar p-4 shadow-xl">
@@ -344,7 +344,7 @@ export function AdminShell({ children }: AdminShellProps) {
                   size="icon-sm"
                   className="lg:hidden"
                   onClick={() => setMobileOpen(true)}
-                  aria-label="Abrir men�"
+                  aria-label="Abrir menu"
                 >
                   <Menu className="size-4" />
                 </Button>
@@ -459,7 +459,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
           <div className="mx-auto w-full max-w-310 px-4 py-8 sm:px-6 lg:px-9">{children}</div>
           <p className="px-4 pb-6 text-center text-[11px] text-muted-foreground sm:px-6 lg:px-9">
-            � 2026 Fenix Envases. Todos los derechos reservados.
+           © 2026 Fenix Envases. Todos los derechos reservados.
           </p>
         </main>
       </div>
@@ -469,7 +469,7 @@ export function AdminShell({ children }: AdminShellProps) {
         size="icon"
         className="fixed bottom-5 right-5 z-30 rounded-full shadow-[0_14px_35px_rgba(138,103,0,0.35)] lg:bottom-7 lg:right-7"
       >
-        <Link href="/admin/productos/nuevo" aria-label="Nueva cotizaci�n">
+        <Link href="/admin/productos/nuevo" aria-label="Nueva cotización">
           <Plus className="size-5" />
         </Link>
       </Button>
@@ -503,7 +503,7 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
     <>
       <div className="mb-10 px-2">
         <h1 className="font-display text-[1.72rem] leading-none text-foreground">Fenix Admin</h1>
-        <p className="mt-1 text-xs text-muted-foreground">Panel de administraci�n</p>
+        <p className="mt-1 text-xs text-muted-foreground">Panel de administración</p>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -536,7 +536,7 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
         <Button asChild className="w-full justify-center rounded-full">
           <Link href="/admin/productos/nuevo" onClick={onNavigate}>
             <Plus className="size-4" />
-            Nueva Cotizaci�n
+            Nueva Cotización
           </Link>
         </Button>
 
@@ -547,7 +547,7 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
             className="flex w-full items-center gap-3 rounded-xl px-4 py-2 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300 cursor-pointer"
           >
             <LogOut className="size-4" />
-            Cerrar sesi�n
+            Cerrar sesión
           </button>
         </div>
       </div>

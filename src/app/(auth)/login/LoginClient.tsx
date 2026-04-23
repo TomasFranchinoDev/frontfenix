@@ -117,8 +117,8 @@ export function LoginClient() {
   };
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+    <main className="flex-1 bg-background text-foreground">
+      <div className="grid min-h-[640px] grid-cols-1 lg:grid-cols-2">
         <section className="relative hidden overflow-hidden lg:block">
           <Image
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnPo-q4-Ks7h3dTVuvzLW8N1Jo6C5J3D33q3yBoabt2jd7thRjGFb2JkvctZFOp_CBWPH-Up6sEs68Ip2f0NHVQ4UX3M1g78cyMWC_I0BOSZ1nsdoMRwhHVbwsQhnB5YIarfoM2H3FToFhq3zWhpIiGC-vPNYrANfvQYUpGPpkVnrRK0QvWb2qSoGq3ZDUGabwwqa0aX39wX2o_PAh3MfbvPLwTEywDD8pvOtYIe1ht09U6UWe2UBm77tKjC5Cfung7P7CfWJk7LdW"
