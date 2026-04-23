@@ -117,8 +117,8 @@ export function LoginClient() {
   };
 
   return (
-    <main className="flex-1 bg-background text-foreground">
-      <div className="grid min-h-[640px] grid-cols-1 lg:grid-cols-2">
+    <main className="flex flex-1 bg-background text-foreground">
+      <div className="grid flex-1 grid-cols-1 lg:grid-cols-2">
         <section className="relative hidden overflow-hidden lg:block">
           <Image
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnPo-q4-Ks7h3dTVuvzLW8N1Jo6C5J3D33q3yBoabt2jd7thRjGFb2JkvctZFOp_CBWPH-Up6sEs68Ip2f0NHVQ4UX3M1g78cyMWC_I0BOSZ1nsdoMRwhHVbwsQhnB5YIarfoM2H3FToFhq3zWhpIiGC-vPNYrANfvQYUpGPpkVnrRK0QvWb2qSoGq3ZDUGabwwqa0aX39wX2o_PAh3MfbvPLwTEywDD8pvOtYIe1ht09U6UWe2UBm77tKjC5Cfung7P7CfWJk7LdW"
@@ -132,7 +132,7 @@ export function LoginClient() {
 
           <div className="relative z-10 flex h-full flex-col justify-between p-10 xl:p-14">
             <p className="font-sans text-3xl font-semibold tracking-tight text-[#0F1419]">Fenix Envases</p>
-            <h2 className="max-w-sm font-sans text-5xl leading-[1.05] text-[#0F1419]">Arquitectura en Empaque.</h2>
+            <h2 className="font-sans text-5xl leading-[1.05] text-[#0F1419]">Arquitectura en Empaque.</h2>
           </div>
         </section>
 
@@ -212,7 +212,7 @@ export function LoginClient() {
                   disabled={isSubmitting}
                   className="h-12 w-full rounded-lg bg-[#B9983A] font-sans text-base font-semibold text-foreground transition-colors hover:bg-[#CAA94B]"
                 >
-                  {isSubmitting ? "Ingresando..." : "Log In"}
+                  {isSubmitting ? "Ingresando..." : "Ingresar"}
                 </Button>
 
                 <p className="text-center font-sans text-sm text-[#5E5750]">

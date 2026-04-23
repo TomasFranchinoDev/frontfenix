@@ -9,8 +9,8 @@ const footerLinks = [
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#1a1a1a] py-10 px-6 md:px-12">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
+    <footer className="w-full bg-[#1a1a1a] px-6 py-10 md:px-12 xl:px-8">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 md:flex-row md:items-center md:justify-between">
         {/* Logo */}
         <div className="font-display text-lg font-bold text-white">
           Fenix

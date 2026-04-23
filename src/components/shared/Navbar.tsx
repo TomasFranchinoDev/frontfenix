@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { ChevronDown, Menu, Search, ShoppingBag, X } from "lucide-react"
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js"
 
@@ -58,18 +58,10 @@ export function Navbar() {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const pathname = usePathname()
   const router = useRouter()
-  const [currentQuery, setCurrentQuery] = useState("")
+  const searchParams = useSearchParams()
+  const currentQuery = searchParams.get("q") ?? ""
 
   const setSearchQuery = useCatalogStore((state) => state.setSearchQuery)
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return
-    }
-
-    const nextQuery = new URLSearchParams(window.location.search).get("q") ?? ""
-    setCurrentQuery(nextQuery)
-  }, [pathname])
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -165,7 +157,7 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-outline-variant bg-white">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-4 md:px-12">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center gap-3 px-4 py-4 sm:px-6 lg:gap-6 xl:px-8">
           {/* Hamburger Menu Button (Mobile/Tablet) */}
           <button
             type="button"
@@ -177,12 +169,12 @@ export function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="font-display text-lg font-bold px-4 tracking-tight text-foreground shrink-0 mx-auto lg:mx-0">
+          <Link href="/" className="mx-auto shrink-0 font-display text-lg font-bold tracking-tight text-foreground lg:mx-0">
             Fenix Envases
           </Link>
 
           {/* Navigation links - desktop */}
-          <nav className="hidden items-center gap-6 lg:flex">
+          <nav className="hidden shrink-0 items-center gap-8 lg:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -200,7 +192,7 @@ export function Navbar() {
           </nav>
 
           {/* Search bar - desktop */}
-          <div className="hidden flex-1 mx-6 lg:block">
+          <div className="hidden min-w-0 flex-1 lg:block lg:max-w-xl">
             <form onSubmit={handleSearchSubmit} className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               <input
@@ -215,7 +207,7 @@ export function Navbar() {
           </div>
 
           {/* Right section */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="ml-auto flex shrink-0 items-center gap-3 sm:gap-4">
             {/* Auth button / User menu */}
             {session ? (
               <div className="relative" ref={menuRef}>

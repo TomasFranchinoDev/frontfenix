@@ -155,7 +155,7 @@ export default function MiPerfilPage() {
     <div className="min-h-screen bg-white text-foreground">
       <Navbar />
 
-      <main className="mx-auto w-full px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/" className="transition-colors hover:text-foreground">Inicio</Link>
           <span className="text-outline-variant">/</span>
@@ -168,7 +168,7 @@ export default function MiPerfilPage() {
         </header>
 
         {isBusy ? (
-          <Card>
+          <Card className="max-w-3xl">
             <CardContent className="py-10">
               <LoadingSpinner label="Cargando perfil..." className="justify-center" />
             </CardContent>
@@ -176,7 +176,7 @@ export default function MiPerfilPage() {
         ) : null}
 
         {!isBusy && !profile ? (
-          <Card>
+          <Card className="max-w-3xl">
             <CardHeader>
               <CardTitle>No pudimos cargar tu perfil</CardTitle>
               <CardDescription>Intenta nuevamente en unos segundos.</CardDescription>
@@ -190,7 +190,7 @@ export default function MiPerfilPage() {
         ) : null}
 
         {!isBusy && profile ? (
-          <Card>
+          <Card className="max-w-3xl">
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-5 pt-6">
                 <div className="space-y-2">

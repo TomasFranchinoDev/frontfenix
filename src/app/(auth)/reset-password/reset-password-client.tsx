@@ -126,7 +126,7 @@ export function ResetPasswordClient() {
 
           <div className="relative z-10 flex h-full flex-col justify-between p-10 xl:p-14">
             <p className="font-sans text-3xl font-semibold tracking-tight text-[#0F1419]">Fenix Envases</p>
-            <h2 className="max-w-sm font-sans text-5xl leading-[1.05] text-[#0F1419]">Arquitectura en Empaque.</h2>
+            <h2 className="font-sans text-5xl leading-[1.05] text-[#0F1419]">Arquitectura en Empaque.</h2>
           </div>
         </section>
 
@@ -205,7 +205,7 @@ export function ResetPasswordClient() {
 
                   <div className="text-center">
                     <Link href="/login" className="font-sans text-sm text-[#3A352F] underline-offset-4 hover:underline">
-                      Volver al login
+                      Volver al Inicio de Sesión
                     </Link>
                   </div>
                 </div>
