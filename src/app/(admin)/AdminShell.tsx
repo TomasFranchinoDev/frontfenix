@@ -45,6 +45,7 @@ export function AdminShell({ children }: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
   const [currentVista, setCurrentVista] = useState("")
+  const [missingRoleCheckedForSession, setMissingRoleCheckedForSession] = useState<string | null>(null)
 
   const session = useAuthStore((s) => s.session)
   const profile = useAuthStore((s) => s.profile)
@@ -101,7 +102,12 @@ export function AdminShell({ children }: AdminShellProps) {
       }
 
       if (typeof resolvedProfile.es_admin !== "boolean") {
-        resolvedProfile = await fetchProfile()
+        if (missingRoleCheckedForSession !== session.user.id) {
+          setMissingRoleCheckedForSession(session.user.id)
+          resolvedProfile = await fetchProfile()
+        }
+      } else if (missingRoleCheckedForSession !== null) {
+        setMissingRoleCheckedForSession(null)
       }
 
       if (cancelled || !resolvedProfile) {
@@ -133,7 +139,7 @@ export function AdminShell({ children }: AdminShellProps) {
     return () => {
       cancelled = true
     }
-  }, [isInitialized, isLoading, session, profile, fetchProfile, router])
+  }, [isInitialized, isLoading, session, profile, fetchProfile, router, missingRoleCheckedForSession])
 
   const handleLogout = async () => {
     setMobileOpen(false)
