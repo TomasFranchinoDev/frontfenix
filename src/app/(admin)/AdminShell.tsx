@@ -28,7 +28,7 @@ const navItems = [
   { key: "dashboard", href: "/admin", label: "Panel principal", icon: Layers3 },
   { key: "cotizaciones", href: "/admin/ordenes", label: "Cotizaciones", icon: FileText },
   { key: "contenidos", href: "/admin/productos", label: "Productos", icon: Layers3 },
-  { key: "envios", href: "/admin/ordenes?vista=envios", label: "Envíos", icon: Truck },
+  { key: "envios", href: "/admin/ordenes?vista=envios", label: "Env�os", icon: Truck },
 ] as const
 
 function initials(fullName?: string) {
@@ -51,6 +51,7 @@ export function AdminShell({ children }: AdminShellProps) {
   const isInitialized = useAuthStore((s) => s.isInitialized)
   const isLoading = useAuthStore((s) => s.isLoading)
   const initializeAuth = useAuthStore((s) => s.initializeAuth)
+  const fetchProfile = useAuthStore((s) => s.fetchProfile)
   const clearAuth = useAuthStore((s) => s.clearAuth)
   const avatarLabel = initials(profile?.nombre_completo)
 
@@ -68,13 +69,51 @@ export function AdminShell({ children }: AdminShellProps) {
       return
     }
 
-    if (!session || !profile || !profile.es_admin) {
-      router.push("/login")
-      return
+    let cancelled = false
+
+    const verifyAdminAccess = async () => {
+      if (!session) {
+        router.push("/login")
+        return
+      }
+
+      let resolvedProfile = profile
+      let retries = 0
+      const maxRetries = 3
+
+      while (!resolvedProfile && retries < maxRetries) {
+        resolvedProfile = await fetchProfile()
+        if (!resolvedProfile) {
+          retries++
+          if (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+          }
+        }
+      }
+
+      if (cancelled) {
+        return
+      }
+
+      if (!resolvedProfile) {
+        // Still no profile after retries, might be a network error or missing profile
+        return
+      }
+
+      if (!resolvedProfile.es_admin) {
+        router.push("/")
+        return
+      }
+
+      setAuthChecked(true)
     }
 
-    setAuthChecked(true)
-  }, [isInitialized, isLoading, session, profile, router])
+    void verifyAdminAccess()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isInitialized, isLoading, session, profile, fetchProfile, router])
 
   const handleLogout = async () => {
     setMobileOpen(false)
@@ -127,11 +166,11 @@ export function AdminShell({ children }: AdminShellProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {mobileOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú admin">
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Men� admin">
           <button
             type="button"
             className="absolute inset-0 bg-foreground/25 backdrop-blur-sm"
-            aria-label="Cerrar menú"
+            aria-label="Cerrar men�"
             onClick={() => setMobileOpen(false)}
           />
           <div className="absolute inset-y-0 left-0 w-[min(92vw,320px)] bg-sidebar p-4 shadow-xl">
@@ -157,7 +196,7 @@ export function AdminShell({ children }: AdminShellProps) {
                   size="icon-sm"
                   className="lg:hidden"
                   onClick={() => setMobileOpen(true)}
-                  aria-label="Abrir menú"
+                  aria-label="Abrir men�"
                 >
                   <Menu className="size-4" />
                 </Button>
@@ -186,7 +225,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
           <div className="mx-auto w-full max-w-310 px-4 py-8 sm:px-6 lg:px-9">{children}</div>
           <p className="px-4 pb-6 text-center text-[11px] text-muted-foreground sm:px-6 lg:px-9">
-            © 2026 Fenix Envases. Todos los derechos reservados.
+            � 2026 Fenix Envases. Todos los derechos reservados.
           </p>
         </main>
       </div>
@@ -196,7 +235,7 @@ export function AdminShell({ children }: AdminShellProps) {
         size="icon"
         className="fixed bottom-5 right-5 z-30 rounded-full shadow-[0_14px_35px_rgba(138,103,0,0.35)] lg:bottom-7 lg:right-7"
       >
-        <Link href="/admin/productos/nuevo" aria-label="Nueva cotización">
+        <Link href="/admin/productos/nuevo" aria-label="Nueva cotizaci�n">
           <Plus className="size-5" />
         </Link>
       </Button>
@@ -209,7 +248,7 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
     <>
       <div className="mb-10 px-2">
         <h1 className="font-display text-[1.72rem] leading-none text-foreground">Fenix Admin</h1>
-        <p className="mt-1 text-xs text-muted-foreground">Panel de administración</p>
+        <p className="mt-1 text-xs text-muted-foreground">Panel de administraci�n</p>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -242,7 +281,7 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
         <Button asChild className="w-full justify-center rounded-full">
           <Link href="/admin/productos/nuevo" onClick={onNavigate}>
             <Plus className="size-4" />
-            Nueva Cotización
+            Nueva Cotizaci�n
           </Link>
         </Button>
 
@@ -253,10 +292,14 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
             className="flex w-full items-center gap-3 rounded-xl px-4 py-2 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300 cursor-pointer"
           >
             <LogOut className="size-4" />
-            Cerrar sesión
+            Cerrar sesi�n
           </button>
         </div>
       </div>
     </>
   )
 }
+
+// Modified for retry fetchProfile
+
+
