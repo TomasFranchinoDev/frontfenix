@@ -53,9 +53,21 @@ export default function MyOrdersPage() {
     }
   }, [initializeAuth, isInitialized]);
 
+  useEffect(() => {
+    if (!isInitialized || session) {
+      return;
+    }
+
+    router.replace("/login?next=/cuenta/mis-ordenes");
+    router.refresh();
+  }, [isInitialized, router, session]);
+
   const canFetchOrders = isInitialized && Boolean(session);
-  const { data: orders = [], isLoading, isError } = useMyOrders({ enabled: canFetchOrders });
-  const isPageLoading = !canFetchOrders || isLoading;
+  const { data: orders = [], isLoading, isError } = useMyOrders({
+    enabled: canFetchOrders,
+    userId: session?.user.id,
+  });
+  const isPageLoading = !isInitialized || (canFetchOrders && isLoading);
 
   return (
     <div className="min-h-screen bg-white text-foreground">
@@ -73,11 +85,11 @@ export default function MyOrdersPage() {
 
         {isPageLoading ? <LoadingSpinner label="Cargando ordenes..." className="justify-center py-10" /> : null}
 
-        {canFetchOrders && isError ? (
+        {isInitialized && session && isError ? (
           <EmptyState title="No pudimos cargar tus ordenes" description="Intenta nuevamente en unos segundos." />
         ) : null}
 
-        {canFetchOrders && !isPageLoading && !isError && orders.length === 0 ? (
+        {isInitialized && session && !isPageLoading && !isError && orders.length === 0 ? (
           <EmptyState
             title="Aun no tienes ordenes"
             description="Cuando completes un checkout, veras aqui el historial de pedidos."
@@ -86,7 +98,7 @@ export default function MyOrdersPage() {
           />
         ) : null}
 
-        {canFetchOrders && !isPageLoading && !isError && orders.length > 0 ? (
+        {isInitialized && session && !isPageLoading && !isError && orders.length > 0 ? (
           <section className="space-y-4">
             {orders.map((order) => (
               <Link

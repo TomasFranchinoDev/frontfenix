@@ -40,12 +40,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ profile, isAdmin: profile?.es_admin === true });
   },
   fetchProfile: async () => {
+    if (!get().session) {
+      set({ profile: null, isAdmin: false });
+      return null;
+    }
+
     try {
       const { data } = await api.get<AuthProfile>("/api/users/me");
       set({ profile: data, isAdmin: data.es_admin === true });
       return data;
-    } catch {
-      return get().profile;
+    } catch (error) {
+      console.error("Failed to fetch profile", error);
+      set({ profile: null, isAdmin: false });
+      return null;
     }
   },
   updateProfile: async (updates) => {

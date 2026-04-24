@@ -12,25 +12,30 @@ export const ordersQueryKeys = {
 
 type OrdersQueryOptions = {
   enabled?: boolean;
+  userId?: string;
 };
 
 export function useMyOrders(options: OrdersQueryOptions = {}) {
-  const { enabled = true } = options;
+  const { enabled = true, userId } = options;
 
   return useQuery({
-    queryKey: ordersQueryKeys.mine,
+    queryKey: [...ordersQueryKeys.mine, userId ?? "anonymous"],
     queryFn: getMyOrders,
     enabled,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
 export function useOrderDetail(codigoOrden: string | undefined, options: OrdersQueryOptions = {}) {
-  const { enabled = true } = options;
+  const { enabled = true, userId } = options;
 
   return useQuery({
-    queryKey: ordersQueryKeys.detail(codigoOrden ?? ""),
+    queryKey: [...ordersQueryKeys.detail(codigoOrden ?? ""), userId ?? "anonymous"],
     queryFn: () => getOrderDetail(codigoOrden!),
     enabled: Boolean(codigoOrden) && enabled,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 

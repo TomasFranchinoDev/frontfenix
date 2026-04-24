@@ -17,10 +17,10 @@ import {
 import { Button } from "@/src/components/ui/button"
 import { Input } from "@/src/components/ui/input"
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
+import { useLogout } from "@/src/hooks/useLogout"
 import { cn } from "@/src/lib/utils"
 import api from "@/src/lib/api/client"
 import { useAuthStore } from "@/src/stores/authStore"
-import { supabase } from "@/src/lib/supabase/client"
 
 type AdminShellProps = {
   children: React.ReactNode
@@ -82,8 +82,8 @@ export function AdminShell({ children }: AdminShellProps) {
   const isLoading = useAuthStore((s) => s.isLoading)
   const initializeAuth = useAuthStore((s) => s.initializeAuth)
   const fetchProfile = useAuthStore((s) => s.fetchProfile)
-  const clearAuth = useAuthStore((s) => s.clearAuth)
   const avatarLabel = initials(profile?.nombre_completo)
+  const logout = useLogout({ redirectTo: "/login" })
 
   // Initialize auth if not done yet
   useEffect(() => {
@@ -172,9 +172,7 @@ export function AdminShell({ children }: AdminShellProps) {
 
   const handleLogout = async () => {
     setMobileOpen(false)
-    await supabase.auth.signOut()
-    clearAuth()
-    router.push("/")
+    await logout()
   }
 
   useEffect(() => {
@@ -502,7 +500,7 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
   return (
     <>
       <div className="mb-10 px-2">
-        <h1 className="font-display text-[1.72rem] leading-none text-foreground">Fenix Admin</h1>
+        <h1 className="font-display text-[1.72rem] leading-none text-white">Fenix Admin</h1>
         <p className="mt-1 text-xs text-muted-foreground">Panel de administración</p>
       </div>
 
@@ -556,5 +554,4 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
 }
 
 // Modified for retry fetchProfile
-
 

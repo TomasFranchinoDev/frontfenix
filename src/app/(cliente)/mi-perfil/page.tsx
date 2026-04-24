@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Footer } from "@/src/components/shared/Footer";
 import { LoadingSpinner } from "@/src/components/shared/LoadingSpinner";
@@ -26,6 +27,7 @@ const EMPTY_FORM: ProfileFormState = {
 };
 
 export default function MiPerfilPage() {
+  const router = useRouter();
   const session = useAuthStore((state) => state.session);
   const profile = useAuthStore((state) => state.profile);
   const isInitialized = useAuthStore((state) => state.isInitialized);
@@ -46,10 +48,19 @@ export default function MiPerfilPage() {
   }, [initializeAuth, isInitialized]);
 
   useEffect(() => {
+    if (!isInitialized || session) {
+      return;
+    }
+
+    router.replace("/login?next=/mi-perfil");
+    router.refresh();
+  }, [isInitialized, router, session]);
+
+  useEffect(() => {
     let isMounted = true;
 
     const loadProfile = async () => {
-      if (!(isInitialized && session && !profile)) {
+      if (!(isInitialized && session)) {
         return;
       }
 
@@ -68,7 +79,7 @@ export default function MiPerfilPage() {
     return () => {
       isMounted = false;
     };
-  }, [fetchProfile, isInitialized, profile, session]);
+  }, [fetchProfile, isInitialized, session]);
 
   const isBusy = !isInitialized || isFetchingProfile;
 

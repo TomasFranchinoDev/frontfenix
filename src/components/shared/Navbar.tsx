@@ -4,11 +4,10 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { ChevronDown, Menu, Search, ShoppingBag, X } from "lucide-react"
-import type { AuthChangeEvent, Session } from "@supabase/supabase-js"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar"
+import { useLogout } from "@/src/hooks/useLogout"
 import { cn } from "@/src/lib/utils"
-import { supabase } from "@/src/lib/supabase/client"
 import { useAuthStore } from "@/src/stores/authStore"
 import { useCartStore } from "@/src/stores/cartStore"
 import { useCatalogStore } from "@/src/stores/catalogStore"
@@ -81,33 +80,13 @@ export function Navbar() {
   const profile = useAuthStore((state) => state.profile)
   const isInitialized = useAuthStore((state) => state.isInitialized)
   const initializeAuth = useAuthStore((state) => state.initializeAuth)
-  const setSession = useAuthStore((state) => state.setSession)
-  const fetchProfile = useAuthStore((state) => state.fetchProfile)
-  const clearAuth = useAuthStore((state) => state.clearAuth)
+  const logout = useLogout({ redirectTo: "/login" })
 
   useEffect(() => {
     if (!isInitialized) {
       void initializeAuth()
     }
   }, [initializeAuth, isInitialized])
-
-  useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, nextSession: Session | null) => {
-      setSession(nextSession)
-
-      if (nextSession) {
-        await fetchProfile()
-      } else if (event === "SIGNED_OUT") {
-        clearAuth()
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [clearAuth, fetchProfile, setSession])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -137,9 +116,8 @@ export function Navbar() {
 
   const handleLogout = async () => {
     setIsMenuOpen(false)
-    await supabase.auth.signOut()
-    clearAuth()
-    router.push("/")
+    setIsMobileMenuOpen(false)
+    await logout()
   }
 
   const profileLabel = getProfileInitials(profile?.nombre_completo)

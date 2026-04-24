@@ -118,9 +118,21 @@ export default function OrderDetailPage() {
     }
   }, [initializeAuth, isInitialized]);
 
+  useEffect(() => {
+    if (!isInitialized || session) {
+      return;
+    }
+
+    router.replace("/login?next=/cuenta/mis-ordenes");
+    router.refresh();
+  }, [isInitialized, router, session]);
+
   const canFetchOrder = isInitialized && Boolean(session) && Boolean(codigoOrden);
-  const { data: order, isLoading, isError } = useOrderDetail(codigoOrden, { enabled: canFetchOrder });
-  const isPageLoading = !canFetchOrder || isLoading;
+  const { data: order, isLoading, isError } = useOrderDetail(codigoOrden, {
+    enabled: canFetchOrder,
+    userId: session?.user.id,
+  });
+  const isPageLoading = !isInitialized || (canFetchOrder && isLoading);
 
   return (
     <div className="min-h-screen bg-white text-foreground">
