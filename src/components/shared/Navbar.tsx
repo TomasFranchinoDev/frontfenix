@@ -51,6 +51,10 @@ const navLinks = [
   { href: "/cuenta/mis-ordenes", label: "Mis ordenes" },
 ]
 
+function isProtectedNavbarHref(href: string) {
+  return href.startsWith("/cuenta") || href.startsWith("/mi-perfil") || href.startsWith("/admin")
+}
+
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -158,6 +162,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={isProtectedNavbarHref(link.href) ? false : undefined}
                 className={cn(
                   "text-sm font-medium transition-colors",
                   isActive(link.href)
@@ -214,6 +219,7 @@ export function Navbar() {
                   >
                     <Link
                       href="/mi-perfil"
+                      prefetch={false}
                       role="menuitem"
                       className="block rounded-lg px-3 py-2 text-sm text-foreground transition hover:bg-surface-container"
                       onClick={() => setIsMenuOpen(false)}
@@ -222,6 +228,7 @@ export function Navbar() {
                     </Link>
                     <Link
                       href="/cuenta/mis-ordenes"
+                      prefetch={false}
                       role="menuitem"
                       className="block rounded-lg px-3 py-2 text-sm text-foreground transition hover:bg-surface-container"
                       onClick={() => setIsMenuOpen(false)}
@@ -303,6 +310,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={isProtectedNavbarHref(link.href) ? false : undefined}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
                     "text-lg font-medium py-2 border-b border-outline-variant/50 transition-colors",

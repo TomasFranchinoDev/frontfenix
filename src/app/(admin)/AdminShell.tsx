@@ -440,10 +440,10 @@ export function AdminShell({ children }: AdminShellProps) {
 
               <div className="hidden items-center gap-7 lg:flex">
                 <div className="flex items-center gap-5 text-sm text-muted-foreground">
-                  <Link href="/admin" className="border-b-2 border-primary pb-1 font-semibold text-primary">
+                  <Link href="/admin" prefetch={false} className="border-b-2 border-primary pb-1 font-semibold text-primary">
                     Panel
                   </Link>
-                  <Link href="/admin/ordenes" className="transition hover:text-foreground">
+                  <Link href="/admin/ordenes" prefetch={false} className="transition hover:text-foreground">
                     Cotizaciones
                   </Link>
                 </div>
@@ -512,6 +512,7 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               onClick={onNavigate}
               className={cn(
                 "flex items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
@@ -532,7 +533,7 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
 
       <div className="mt-8 space-y-2">
         <Button asChild className="w-full justify-center rounded-full">
-          <Link href="/admin/productos/nuevo" onClick={onNavigate}>
+          <Link href="/admin/productos/nuevo" prefetch={false} onClick={onNavigate}>
             <Plus className="size-4" />
             Nueva Cotización
           </Link>
@@ -554,4 +555,3 @@ function Sidebar({ activeKey, onNavigate, onLogout }: { activeKey: string; onNav
 }
 
 // Modified for retry fetchProfile
-
