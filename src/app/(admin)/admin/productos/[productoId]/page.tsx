@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   ProductForm,
@@ -37,6 +37,7 @@ async function getProductById(productoId: string): Promise<AdminProductDetail> {
 export default function AdminEditProductPage() {
   const params = useParams<{ productoId?: string | string[] }>();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -63,6 +64,9 @@ export default function AdminEditProductPage() {
 
     try {
       await api.put(`/api/admin/productos/${productoId}`, payload);
+      await queryClient.invalidateQueries({ queryKey: ["admin", "product", productoId] });
+      await queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
       router.push("/admin/productos");
       router.refresh();
     } catch {

@@ -8,10 +8,13 @@ import { CartSummary } from "@/src/components/cart/CartSummary";
 import { EmptyState } from "@/src/components/shared/EmptyState";
 import { Footer } from "@/src/components/shared/Footer";
 import { Navbar } from "@/src/components/shared/Navbar";
+import { Toast } from "@/src/components/shared/Toast";
+import { useCartAvailability } from "@/src/hooks/useCartAvailability";
 import { useCartStore } from "@/src/stores/cartStore";
 
 export default function CartPage() {
   const router = useRouter();
+  const { toastMessage, isToastVisible, closeToast } = useCartAvailability();
   const items = useCartStore((state) => state.items);
   const removeItem = useCartStore((state) => state.removeItem);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
@@ -65,6 +68,11 @@ export default function CartPage() {
         )}
       </main>
       <Footer />
+      <Toast
+        message={toastMessage}
+        visible={isToastVisible}
+        onClose={closeToast}
+      />
     </div>
   );
 }

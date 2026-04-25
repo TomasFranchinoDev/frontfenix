@@ -6,11 +6,15 @@ import { useRouter } from "next/navigation";
 import { CheckoutForm } from "@/src/components/checkout/CheckoutForm";
 import { EmptyState } from "@/src/components/shared/EmptyState";
 import { Footer } from "@/src/components/shared/Footer";
+import { LoadingSpinner } from "@/src/components/shared/LoadingSpinner";
 import { Navbar } from "@/src/components/shared/Navbar";
+import { Toast } from "@/src/components/shared/Toast";
+import { useCartAvailability } from "@/src/hooks/useCartAvailability";
 import { useCartStore } from "@/src/stores/cartStore";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { isValidating, toastMessage, isToastVisible, closeToast } = useCartAvailability();
   const items = useCartStore((state) => state.items);
 
   return (
@@ -44,12 +48,21 @@ export default function CheckoutPage() {
               router.push("/carrito");
             }}
           />
+        ) : isValidating ? (
+          <div className="rounded-3xl border border-foreground/10 bg-white p-6">
+            <LoadingSpinner label="Validando disponibilidad del carrito..." className="justify-center py-10" />
+          </div>
         ) : (
           <CheckoutForm />
         )}
       </main>
 
       <Footer />
+      <Toast
+        message={toastMessage}
+        visible={isToastVisible}
+        onClose={closeToast}
+      />
     </div>
   );
 }
