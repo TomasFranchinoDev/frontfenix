@@ -11,6 +11,7 @@ import { LoadingSpinner } from "@/src/components/shared/LoadingSpinner";
 import { Navbar } from "@/src/components/shared/Navbar";
 import { EmptyState } from "@/src/components/shared/EmptyState";
 import { Badge } from "@/src/components/shared/Badge";
+import { Toast } from "@/src/components/shared/Toast";
 import { Button } from "@/src/components/ui/button";
 import { useProduct } from "@/src/hooks/useProducts";
 import { useCartStore } from "@/src/stores/cartStore";
@@ -184,6 +185,8 @@ export default function ProductDetailPage() {
 
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
+  const [toastMessage, setToastMessage] = useState("");
+  const [isToastVisible, setIsToastVisible] = useState(false);
 
   const defaultVariants = useMemo(
     () => (product ? getDefaultVariants(product.esquema_opciones) : {}),
@@ -242,6 +245,8 @@ export default function ProductDetailPage() {
       variantes: effectiveVariants,
       imagen_url: mainImage?.url,
     });
+    setToastMessage("Producto agregado al carrito correctamente.");
+    setIsToastVisible(true);
   };
 
   return (
@@ -319,6 +324,11 @@ export default function ProductDetailPage() {
       </main>
 
       <Footer />
+      <Toast
+        message={toastMessage}
+        visible={isToastVisible}
+        onClose={() => setIsToastVisible(false)}
+      />
     </div>
   );
 }
